@@ -11,8 +11,8 @@ func AsyncTest1() <-chan Result {
 		defer close(r)
 		res, err := Test1()
 		r <- Result{
-		  Value: res,
-		  Error: err,
+			Value: res,
+			Error: err,
 		}
 	}()
 	return r
@@ -24,8 +24,8 @@ func AsyncTest2(str string) <-chan Result {
 		defer close(r)
 		res, err := Test2(s)
 		r <- Result{
-		  Value: res,
-		  Error: err,
+			Value: res,
+			Error: err,
 		}
 	}(str)
 	return r
