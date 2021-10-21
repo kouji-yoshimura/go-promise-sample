@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/kouji-yoshimura/go-promise-sample/heavy"
 	"github.com/kouji-yoshimura/go-promise-sample/heavy2"
 )
-
 
 func main() {
 	fmt.Println("main start")
@@ -23,6 +23,9 @@ func main() {
 
 	// 4. channel エラーあり・複数パターン
 	Pattern4()
+
+	// 5. channel エラーあり・複数・select使用パターン
+	Pattern5()
 }
 
 func Pattern1() {
@@ -73,15 +76,44 @@ func Pattern3() {
 
 func Pattern4() {
 	fmt.Println("\n=== channel with error multiple pattern ===")
-	count := 10
+	count := 100
+
 	chList := make([]<-chan heavy2.Result, count)
 	for i := range chList {
 		ch := heavy2.AsyncTest1()
 		chList[i] = ch
 	}
+
 	bulkResList := make([]heavy2.Result, count)
 	for i, bulkRes := range chList {
 		bulkResList[i] = <-bulkRes
+		fmt.Println(i, "hogeeeeeeeeeeeeeeeeeeeeeee")
 	}
 	fmt.Println(bulkResList)
+}
+
+func Pattern5() {
+	fmt.Println("\n=== channel with error multiple select pattern ===")
+	count := 100
+
+	chList := make([]<-chan heavy2.Result, count)
+	for i := range chList {
+		ch := heavy2.AsyncTest1()
+		chList[i] = ch
+	}
+
+	caseList := make([]reflect.SelectCase, count)
+	for i, ch := range chList {
+	  caseList[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ch)}
+	}
+
+	remain := len(caseList)
+	for remain > 0 {
+		chosen, value, ok := reflect.Select(caseList)
+		if ok {
+			remain --
+			fmt.Println(chosen)
+			fmt.Println(value)
+		}
+	}
 }
